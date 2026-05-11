@@ -1,0 +1,164 @@
+classDiagram
+direction LR
+
+class Main {
+  +main(String[] args)
+}
+
+class City {
+  -String name
+  -int population
+  -double area
+  -double currentTemperature
+  -WeatherState currentWeatherState
+  +updateWeather(double, WeatherState)
+}
+
+class WeatherState {
+  <<enumeration>>
+  SUNNY
+  CLOUDY
+  RAINY
+  SNOWY
+}
+
+class CityRepository {
+  <<Singleton>>
+  -static CityRepository instance
+  -List~City~ cities
+  -CityRepository()
+  +static getInstance() CityRepository
+  +getCities() List~City~
+}
+
+class CitySortStrategy {
+  <<interface>>
+  +sort(List~City~) List~City~
+  +getDisplayName() String
+}
+
+class SortByNameStrategy
+class SortByPopulationStrategy
+class SortByAreaStrategy
+
+class CitySortContext {
+  -CitySortStrategy strategy
+  +setStrategy(CitySortStrategy)
+  +sort(List~City~) List~City~
+}
+
+class CityIterator {
+  <<interface>>
+  +hasNext() boolean
+  +next() City
+  +reset()
+}
+
+class WeatherCityIterator {
+  <<abstract>>
+  -List~City~ cities
+  -int index
+  #targetWeatherState() WeatherState
+}
+
+class SunnyCityIterator
+class CloudyCityIterator
+class RainyCityIterator
+class SnowyCityIterator
+
+class WeatherFilteredCityCollection {
+  -List~City~ cities
+  +createIterator(WeatherState) CityIterator
+}
+
+class WeatherSubject {
+  <<interface>>
+  +attach(WeatherObserver)
+  +detach(WeatherObserver)
+  +notifyObservers()
+}
+
+class WeatherObserver {
+  <<interface>>
+  +updateWeather(List~City~)
+}
+
+class WeatherReportProvider {
+  <<ConcreteSubject>>
+  -List~City~ cities
+  -List~WeatherObserver~ observers
+  +start()
+  +stop()
+  +notifyObservers()
+}
+
+class TemperatureBarChartPanel {
+  <<ConcreteObserver>>
+}
+
+class WeatherPieChartPanel {
+  <<ConcreteObserver>>
+}
+
+class TravelPlannerFrame {
+  <<GUI Client / Observer>>
+}
+
+class VisitableCity {
+  <<interface>>
+  +getCityName() String
+  +getPlanDescription() String
+  +getCost() double
+  +getRequiredHours() double
+}
+
+class BasicCityPlan {
+  <<ConcreteComponent>>
+}
+
+class ActivityDecorator {
+  <<abstract>>
+  -VisitableCity wrappedPlan
+}
+
+class MuseumVisit
+class ShoppingMallVisit
+class ParkVisit
+class CityCenterVisit
+
+Main --> TravelPlannerFrame
+City --> WeatherState
+CityRepository --> City
+CityRepository --> WeatherState
+
+CitySortStrategy <|.. SortByNameStrategy
+CitySortStrategy <|.. SortByPopulationStrategy
+CitySortStrategy <|.. SortByAreaStrategy
+CitySortContext o--> CitySortStrategy
+TravelPlannerFrame --> CitySortContext
+
+CityIterator <|.. WeatherCityIterator
+WeatherCityIterator <|-- SunnyCityIterator
+WeatherCityIterator <|-- CloudyCityIterator
+WeatherCityIterator <|-- RainyCityIterator
+WeatherCityIterator <|-- SnowyCityIterator
+WeatherFilteredCityCollection --> CityIterator
+WeatherFilteredCityCollection --> WeatherState
+TravelPlannerFrame --> WeatherFilteredCityCollection
+
+WeatherSubject <|.. WeatherReportProvider
+WeatherObserver <|.. TemperatureBarChartPanel
+WeatherObserver <|.. WeatherPieChartPanel
+WeatherObserver <|.. TravelPlannerFrame
+WeatherReportProvider o--> WeatherObserver
+WeatherReportProvider --> City
+
+VisitableCity <|.. BasicCityPlan
+VisitableCity <|.. ActivityDecorator
+ActivityDecorator o--> VisitableCity
+ActivityDecorator <|-- MuseumVisit
+ActivityDecorator <|-- ShoppingMallVisit
+ActivityDecorator <|-- ParkVisit
+ActivityDecorator <|-- CityCenterVisit
+BasicCityPlan --> City
+TravelPlannerFrame --> VisitableCity
