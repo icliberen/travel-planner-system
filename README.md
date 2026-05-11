@@ -2,10 +2,6 @@
 
 A Java Swing desktop application that demonstrates five Gang of Four (GoF) design patterns in a real-world travel planning scenario. The system lets users browse Turkish cities, sort and filter them by weather, and build visit plans with dynamic budget and time calculations — all while live weather updates drive automatic chart refreshes.
 
-## Screenshots
-
-> The application launches a single Swing window with city lists, an activity planner, and live charts.
-
 ## Features
 
 - **City browser** — View 12 Turkish cities with population, area, temperature, and weather data.
@@ -30,9 +26,7 @@ A Java Swing desktop application that demonstrates five Gang of Four (GoF) desig
 ```
 ├── data/
 │   └── cities.json                  # Sample city data (12 Turkish cities)
-├── dist/
-│   └── TravelPlannerSystem.jar      # Pre-built runnable JAR
-├── src/main/java/com/seng324/travelplanner/
+├── src/main/java/com/travelplanner/
 │   ├── Main.java                    # Application entry point
 │   ├── model/
 │   │   ├── City.java                # City data model
@@ -79,15 +73,7 @@ A Java Swing desktop application that demonstrates five Gang of Four (GoF) desig
 
 - **JDK 21** (or any recent JDK/JRE with Swing support)
 
-## How to Run
-
-### Using the pre-built JAR
-
-```bash
-java -jar dist/TravelPlannerSystem.jar
-```
-
-### Building from source
+## How to Build and Run
 
 ```bash
 # Compile
@@ -98,7 +84,7 @@ javac -d build/classes $(find src -name "*.java")
 cp -r data build/classes/
 
 # Run
-java -cp build/classes com.seng324.travelplanner.Main
+java -cp build/classes com.travelplanner.Main
 ```
 
 ## How to Use
