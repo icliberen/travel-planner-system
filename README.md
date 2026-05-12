@@ -1,109 +1,93 @@
 # Travel Planner System
 
-A Java Swing desktop application that demonstrates five Gang of Four (GoF) design patterns in a real-world travel planning scenario. The system lets users browse Turkish cities, sort and filter them by weather, and build visit plans with dynamic budget and time calculations — all while live weather updates drive automatic chart refreshes.
+A Java Swing desktop application demonstrating six GoF design patterns in a travel planning scenario. Browse Turkish cities, sort and filter by weather, build visit plans, and watch live weather updates with charts.
 
-## Features
+> **Branch `improvements`** — This branch extends the base with modern UI, new features, tests, and CI. See [`main`](../../tree/main) for the original version.
 
-- **City browser** — View 12 Turkish cities with population, area, temperature, and weather data.
-- **Sorting** — Sort cities by name, population, or area via a drop-down selector.
-- **Weather filtering** — Filter the city list to show only sunny, cloudy, rainy, or snowy cities.
-- **Activity planner** — Select a city and check activities (museum, shopping mall, park, city center) to calculate total budget and duration.
-- **Live weather updates** — A background thread randomizes city weather every 3 seconds.
-- **Charts** — A temperature bar chart and a weather distribution pie chart update automatically with every weather change.
+## What's New (improvements branch)
 
-## Design Patterns
+### Modern UI
+- **FlatLaf Dark Theme** — Replaces default Swing L&F with a modern dark appearance via [FlatLaf](https://www.formdev.com/flatlaf/)
 
-| Pattern | Key Classes | Purpose |
-| --- | --- | --- |
-| **Singleton** | `CityRepository` | Loads `data/cities.json` once and provides a single shared city list. |
-| **Strategy** | `CitySortStrategy`, `SortByNameStrategy`, `SortByPopulationStrategy`, `SortByAreaStrategy`, `CitySortContext` | Lets the GUI switch sorting algorithms at runtime. |
-| **Iterator** | `CityIterator`, `WeatherCityIterator`, `SunnyCityIterator`, `CloudyCityIterator`, `RainyCityIterator`, `SnowyCityIterator`, `WeatherFilteredCityCollection` | Traverses only cities that match the selected weather condition. |
-| **Observer** | `WeatherSubject`, `WeatherObserver`, `WeatherReportProvider`, `TemperatureBarChartPanel`, `WeatherPieChartPanel`, `TravelPlannerFrame` | Publishes weather changes and refreshes all subscribed GUI components. |
-| **Decorator** | `VisitableCity`, `BasicCityPlan`, `ActivityDecorator`, `MuseumVisit`, `ShoppingMallVisit`, `ParkVisit`, `CityCenterVisit` | Wraps a base city plan with optional activities, each adding cost and time. |
+### New Features
+- **City Search** — Real-time filtering of the city list by name as you type
+- **Weather Speed Control** — Adjustable slider (1–10 seconds) to control how fast weather updates
+- **Trip Export** — Export your planned trip (city info + activities + budget) to a text file
+- **Weather History** — Tracks and displays the last 5 weather snapshots per city
+
+### New Design Pattern
+- **Factory Pattern** — `CityIteratorFactory` centralizes iterator creation, replacing inline switch logic
+
+### Engineering
+- **Maven Build** — `pom.xml` with dependency management, shade plugin for fat JAR
+- **JUnit 5 Tests** — 15+ unit tests covering Strategy, Decorator, Iterator, Factory, and Observer
+- **GitHub Actions CI** — Automated build and test on every push
+- **java.util.logging** — Structured logging throughout the application
+- **Javadoc** — Comprehensive documentation on all new and enhanced classes
+
+## Design Patterns (6 total)
+
+| # | Pattern | Key Classes | Purpose |
+|---|---------|-------------|---------|
+| 1 | **Singleton** | `CityRepository` | One shared city list across the app |
+| 2 | **Strategy** | `CitySortStrategy`, `CitySortContext` | Swappable sorting algorithms |
+| 3 | **Iterator** | `CityIterator`, `WeatherCityIterator`, weather-specific iterators | Traverse cities matching a weather filter |
+| 4 | **Observer** | `WeatherSubject`, `WeatherObserver`, `WeatherReportProvider`, `WeatherHistoryTracker` | Publish weather changes to GUI, charts, and history |
+| 5 | **Decorator** | `VisitableCity`, `ActivityDecorator`, activity classes | Stack activities with additive cost/time |
+| 6 | **Factory** | `CityIteratorFactory` | Create the correct iterator for a weather state |
 
 ## Project Structure
 
 ```
-├── data/
-│   └── cities.json                  # Sample city data (12 Turkish cities)
+├── pom.xml                              # Maven build
+├── data/cities.json                     # City data (12 Turkish cities)
 ├── src/main/java/com/travelplanner/
-│   ├── Main.java                    # Application entry point
-│   ├── model/
-│   │   ├── City.java                # City data model
-│   │   └── WeatherState.java        # Weather enum (SUNNY, CLOUDY, RAINY, SNOWY)
-│   ├── repository/
-│   │   └── CityRepository.java      # Singleton — loads and holds city data
-│   ├── sorting/
-│   │   ├── CitySortStrategy.java    # Strategy interface
-│   │   ├── SortByNameStrategy.java
-│   │   ├── SortByPopulationStrategy.java
-│   │   ├── SortByAreaStrategy.java
-│   │   └── CitySortContext.java      # Strategy context
-│   ├── iterator/
-│   │   ├── CityIterator.java        # Iterator interface
-│   │   ├── WeatherCityIterator.java # Abstract base iterator
-│   │   ├── SunnyCityIterator.java
-│   │   ├── CloudyCityIterator.java
-│   │   ├── RainyCityIterator.java
-│   │   ├── SnowyCityIterator.java
-│   │   └── WeatherFilteredCityCollection.java
-│   ├── observer/
-│   │   ├── WeatherSubject.java      # Subject interface
-│   │   ├── WeatherObserver.java     # Observer interface
-│   │   └── WeatherReportProvider.java # Concrete subject
-│   ├── decorator/
-│   │   ├── VisitableCity.java       # Component interface
-│   │   ├── BasicCityPlan.java       # Concrete component
-│   │   ├── ActivityDecorator.java   # Abstract decorator
-│   │   ├── MuseumVisit.java
-│   │   ├── ShoppingMallVisit.java
-│   │   ├── ParkVisit.java
-│   │   └── CityCenterVisit.java
-│   └── ui/
-│       ├── TravelPlannerFrame.java  # Main GUI (also an Observer)
-│       ├── TemperatureBarChartPanel.java
-│       └── WeatherPieChartPanel.java
-└── uml/
-    ├── travel-planner-uml.mmd      # Mermaid class diagram source
-    ├── travel-planner-uml.svg       # Exported SVG
-    └── travel-planner-uml.pdf       # Exported PDF
+│   ├── Main.java                        # Entry point (FlatLaf setup)
+│   ├── model/                           # City, WeatherState
+│   ├── repository/                      # Singleton CityRepository
+│   ├── sorting/                         # Strategy pattern
+│   ├── iterator/                        # Iterator + Factory patterns
+│   ├── observer/                        # Observer + WeatherHistoryTracker
+│   ├── decorator/                       # Decorator pattern
+│   ├── export/                          # TripExporter utility
+│   └── ui/                              # Swing GUI + chart panels
+├── src/test/java/com/travelplanner/     # JUnit 5 tests
+│   ├── sorting/SortingStrategyTest.java
+│   ├── decorator/DecoratorTest.java
+│   ├── iterator/IteratorTest.java
+│   └── observer/ObserverTest.java
+├── .github/workflows/ci.yml            # GitHub Actions CI
+└── uml/                                 # Mermaid diagrams
 ```
 
 ## Requirements
 
-- **JDK 21** (or any recent JDK/JRE with Swing support)
+- **JDK 21+**
+- **Maven 3.9+** (or use the included Maven wrapper)
 
-## How to Build and Run
+## Build & Run
 
 ```bash
-# Compile
-mkdir -p build/classes
-javac -d build/classes $(find src -name "*.java")
-
-# Copy resources
-cp -r data build/classes/
+# Build
+mvn clean package
 
 # Run
-java -cp build/classes com.travelplanner.Main
+java -jar target/travel-planner-system-2.0.0.jar
+
+# Run tests
+mvn test
 ```
 
 ## How to Use
 
-1. **Sort cities** — Use the *Sorting criteria* dropdown to order the city list by name, population, or area.
-2. **Filter by weather** — Use the *Weather filter* dropdown to display only cities with a specific weather condition.
-3. **Select a city** — Click a city in the *All Cities* list.
-4. **Plan activities** — Check one or more activities in the *City Activity Planner* panel to see the total budget and duration.
-5. **Watch live updates** — The weather provider updates city weather randomly every 3 seconds; the bar chart and pie chart refresh automatically.
-
-## UML Class Diagram
-
-The Mermaid source is located at `uml/travel-planner-uml.mmd`. You can view or re-export it using [Mermaid Live Editor](https://mermaid.live/) or any Mermaid-compatible tool.
-
-Pre-exported versions are also included:
-
-- `uml/travel-planner-uml.svg`
-- `uml/travel-planner-uml.pdf`
+1. **Search** — Type in the search box to filter cities by name
+2. **Sort** — Choose a sorting criterion from the dropdown
+3. **Filter by weather** — Select a weather condition
+4. **Plan activities** — Check activities to see total budget and duration
+5. **Adjust weather speed** — Drag the slider to change update frequency
+6. **Export** — Click "Export Plan" to save your trip plan to a file
+7. **Watch history** — Weather snapshots appear in the planner panel
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE).

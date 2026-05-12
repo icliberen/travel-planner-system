@@ -7,23 +7,44 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
-/*
- * Observer Pattern - ConcreteSubject role
- * EN: This publisher changes weather every 3 seconds on its own thread and notifies all observers.
- * TR: Bu publisher kendi thread'i uzerinde 3 saniyede bir havayi degistirir ve tum observerlari uyarir.
+/**
+ * Observer Pattern — ConcreteSubject role.
+ * Publishes random weather changes on a background thread.
+ * The update interval can be changed at runtime via {@link #setUpdateDelayMillis(int)}.
  */
 public class WeatherReportProvider implements WeatherSubject, Runnable {
-    private static final int UPDATE_DELAY_MILLIS = 3000;
+    private static final Logger LOGGER = Logger.getLogger(WeatherReportProvider.class.getName());
+    private static final int DEFAULT_DELAY_MILLIS = 3000;
 
     private final List<City> cities;
     private final List<WeatherObserver> observers = new CopyOnWriteArrayList<>();
     private final Random random = new Random();
     private volatile boolean running;
+    private volatile int updateDelayMillis = DEFAULT_DELAY_MILLIS;
     private Thread workerThread;
 
     public WeatherReportProvider(List<City> cities) {
         this.cities = cities;
+    }
+
+    /**
+     * Change the weather update interval at runtime.
+     *
+     * @param millis delay between updates in milliseconds (minimum 500)
+     */
+    public void setUpdateDelayMillis(int millis) {
+        this.updateDelayMillis = Math.max(500, millis);
+        LOGGER.info("Update delay changed to " + this.updateDelayMillis + "ms");
+        // Interrupt the sleeping thread so the new interval takes effect immediately
+        if (workerThread != null && workerThread.isAlive()) {
+            workerThread.interrupt();
+        }
+    }
+
+    public int getUpdateDelayMillis() {
+        return updateDelayMillis;
     }
 
     public void start() {
@@ -34,6 +55,7 @@ public class WeatherReportProvider implements WeatherSubject, Runnable {
         workerThread = new Thread(this, "WeatherReportProvider");
         workerThread.setDaemon(true);
         workerThread.start();
+        LOGGER.info("Weather provider started (interval: " + updateDelayMillis + "ms)");
     }
 
     public void stop() {
@@ -41,18 +63,21 @@ public class WeatherReportProvider implements WeatherSubject, Runnable {
         if (workerThread != null) {
             workerThread.interrupt();
         }
+        LOGGER.info("Weather provider stopped");
     }
 
     @Override
     public void run() {
         while (running) {
             try {
-                Thread.sleep(UPDATE_DELAY_MILLIS);
+                Thread.sleep(updateDelayMillis);
                 randomizeWeather();
                 notifyObservers();
             } catch (InterruptedException interruptedException) {
-                Thread.currentThread().interrupt();
-                running = false;
+                // If still running, the interrupt was just to change the interval
+                if (!running) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }
