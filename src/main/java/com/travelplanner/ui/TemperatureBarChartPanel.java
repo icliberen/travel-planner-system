@@ -54,7 +54,10 @@ public class TemperatureBarChartPanel extends JPanel implements WeatherObserver 
         int chartWidth = width - left - right;
         int chartHeight = height - top - bottom;
 
-        g2.setColor(new Color(32, 40, 54));
+        Color foreground = getForeground();
+        Color axisColor = getBackground().getRed() < 80 ? new Color(92, 99, 112) : new Color(219, 225, 232);
+
+        g2.setColor(foreground);
         g2.drawString("Temperature Bar Chart", left, 20);
 
         if (cities.isEmpty()) {
@@ -68,7 +71,7 @@ public class TemperatureBarChartPanel extends JPanel implements WeatherObserver 
         double baseline = Math.min(0, min);
         double range = Math.max(1, max - baseline);
 
-        g2.setColor(new Color(219, 225, 232));
+        g2.setColor(axisColor);
         g2.drawLine(left, top, left, top + chartHeight);
         g2.drawLine(left, top + chartHeight, left + chartWidth, top + chartHeight);
 
@@ -86,7 +89,7 @@ public class TemperatureBarChartPanel extends JPanel implements WeatherObserver 
             g2.setColor(colorForTemperature(temperature));
             g2.fillRoundRect(x, y, barWidth, barHeight, 6, 6);
 
-            g2.setColor(new Color(32, 40, 54));
+            g2.setColor(foreground);
             String value = FORMAT.format(temperature);
             g2.drawString(value, x + (barWidth - metrics.stringWidth(value)) / 2, Math.max(top + 12, y - 5));
 

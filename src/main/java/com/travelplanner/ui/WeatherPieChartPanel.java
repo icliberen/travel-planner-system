@@ -50,7 +50,9 @@ public class WeatherPieChartPanel extends JPanel implements WeatherObserver {
         Graphics2D g2 = (Graphics2D) graphics.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(new Color(32, 40, 54));
+        Color foreground = getForeground();
+
+        g2.setColor(foreground);
         g2.drawString("Weather Distribution Pie Chart", 24, 20);
 
         if (cities.isEmpty()) {
@@ -87,7 +89,7 @@ public class WeatherPieChartPanel extends JPanel implements WeatherObserver {
             double percent = count * 100.0 / cities.size();
             g2.setColor(colors.get(state));
             g2.fillRect(legendX, legendY - 10, 14, 14);
-            g2.setColor(new Color(32, 40, 54));
+            g2.setColor(foreground);
             g2.drawString(state + " - " + String.format("%.0f%%", percent), legendX + 22, legendY + 2);
             legendY += 26;
         }

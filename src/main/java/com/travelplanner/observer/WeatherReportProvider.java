@@ -47,6 +47,10 @@ public class WeatherReportProvider implements WeatherSubject, Runnable {
         return updateDelayMillis;
     }
 
+    public boolean isRunning() {
+        return running;
+    }
+
     public void start() {
         if (running) {
             return;

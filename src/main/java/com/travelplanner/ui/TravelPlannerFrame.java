@@ -41,10 +41,13 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -73,6 +76,13 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
     private static final Logger LOGGER = Logger.getLogger(TravelPlannerFrame.class.getName());
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("0.00");
     private static final DecimalFormat HOUR_FORMAT = new DecimalFormat("0.0");
+    private static final Color LIGHT_BACKGROUND = new Color(250, 252, 255);
+    private static final Color LIGHT_PANEL = new Color(255, 255, 255);
+    private static final Color LIGHT_FOREGROUND = new Color(32, 40, 54);
+    private static final Color DARK_BACKGROUND = new Color(18, 20, 24);
+    private static final Color DARK_PANEL = new Color(29, 32, 38);
+    private static final Color DARK_FOREGROUND = new Color(236, 239, 244);
+    private static final Color DARK_FIELD = new Color(38, 42, 49);
 
     private final CityRepository repository = CityRepository.getInstance();
     private final CitySortContext sortContext = new CitySortContext(new SortByNameStrategy());
@@ -93,10 +103,13 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
     private final JCheckBox shoppingCheckBox = new JCheckBox("Shopping Mall Visit ($60, 3h)");
     private final JCheckBox parkCheckBox = new JCheckBox("Park Visit ($15, 1.5h)");
     private final JCheckBox cityCenterCheckBox = new JCheckBox("Historic City Center Visit ($25, 2h)");
+    private final JButton weatherToggleButton = new JButton("Stop");
+    private final JCheckBox darkModeCheckBox = new JCheckBox("Dark Mode");
     private final JButton exportButton = new JButton("Export Plan");
     private final JTextArea planDetailsArea = new JTextArea();
     private final TemperatureBarChartPanel temperatureBarChartPanel = new TemperatureBarChartPanel();
     private final WeatherPieChartPanel weatherPieChartPanel = new WeatherPieChartPanel();
+    private boolean darkMode;
 
     public TravelPlannerFrame() {
         super("Travel Planner System");
@@ -159,6 +172,8 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
         panel.add(searchField);
         panel.add(new JLabel("Update speed (s):"));
         panel.add(speedSlider);
+        panel.add(weatherToggleButton);
+        panel.add(darkModeCheckBox);
         return panel;
     }
 
@@ -231,6 +246,11 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
         });
 
         weatherComboBox.addActionListener(event -> refreshFilteredCityList());
+        weatherToggleButton.addActionListener(event -> toggleWeatherUpdates());
+        darkModeCheckBox.addActionListener(event -> {
+            darkMode = darkModeCheckBox.isSelected();
+            applyTheme();
+        });
 
         allCityList.addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
@@ -283,6 +303,57 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
         weatherProvider.attach(historyTracker);
         weatherProvider.notifyObservers();
         weatherProvider.start();
+    }
+
+    private void toggleWeatherUpdates() {
+        if (weatherProvider.isRunning()) {
+            weatherProvider.stop();
+            weatherToggleButton.setText("Start");
+        } else {
+            weatherProvider.start();
+            weatherToggleButton.setText("Stop");
+        }
+    }
+
+    private void applyTheme() {
+        Color background = darkMode ? DARK_BACKGROUND : LIGHT_BACKGROUND;
+        Color panel = darkMode ? DARK_PANEL : LIGHT_PANEL;
+        Color field = darkMode ? DARK_FIELD : LIGHT_PANEL;
+        Color foreground = darkMode ? DARK_FOREGROUND : LIGHT_FOREGROUND;
+
+        getContentPane().setBackground(background);
+        applyThemeToChildren(getContentPane(), panel, field, foreground);
+        repaint();
+    }
+
+    private void applyThemeToChildren(Container container, Color panel, Color field, Color foreground) {
+        for (Component component : container.getComponents()) {
+            component.setForeground(foreground);
+            if (component instanceof JTextArea || component instanceof JTextField
+                    || component instanceof JList<?> || component instanceof JComboBox<?>) {
+                component.setBackground(field);
+            } else if (component instanceof JButton) {
+                component.setBackground(field);
+                component.setForeground(foreground);
+            } else {
+                component.setBackground(panel);
+            }
+
+            if (component instanceof JPanel childPanel && childPanel.getBorder() instanceof TitledBorder titledBorder) {
+                titledBorder.setTitleColor(foreground);
+            }
+
+            if (component instanceof JScrollPane scrollPane) {
+                scrollPane.getViewport().setBackground(field);
+                if (scrollPane.getBorder() instanceof TitledBorder titledBorder) {
+                    titledBorder.setTitleColor(foreground);
+                }
+            }
+
+            if (component instanceof Container child) {
+                applyThemeToChildren(child, panel, field, foreground);
+            }
+        }
     }
 
     private void refreshCityLists() {
