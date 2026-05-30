@@ -43,6 +43,10 @@ public class WeatherReportProvider implements WeatherSubject, Runnable {
         }
     }
 
+    public boolean isRunning() {
+        return running;
+    }
+
     @Override
     public void run() {
         while (running) {

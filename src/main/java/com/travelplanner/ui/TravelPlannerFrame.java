@@ -21,6 +21,7 @@ import com.travelplanner.sorting.SortByPopulationStrategy;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -70,6 +71,7 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
     private final JCheckBox shoppingCheckBox = new JCheckBox("Shopping Mall Visit ($60, 3h)");
     private final JCheckBox parkCheckBox = new JCheckBox("Park Visit ($15, 1.5h)");
     private final JCheckBox cityCenterCheckBox = new JCheckBox("Historic City Center Visit ($25, 2h)");
+    private final JButton weatherToggleButton = new JButton("Stop");
     private final JTextArea planDetailsArea = new JTextArea();
     private final TemperatureBarChartPanel temperatureBarChartPanel = new TemperatureBarChartPanel();
     private final WeatherPieChartPanel weatherPieChartPanel = new WeatherPieChartPanel();
@@ -124,6 +126,7 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
         panel.add(new JLabel("Weather filter:"));
         panel.add(weatherComboBox);
         panel.add(new JLabel("Weather updates every 3 seconds"));
+        panel.add(weatherToggleButton);
         return panel;
     }
 
@@ -196,6 +199,7 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
         });
 
         weatherComboBox.addActionListener(event -> refreshFilteredCityList());
+        weatherToggleButton.addActionListener(event -> toggleWeatherUpdates());
         allCityList.addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
                 updatePlannerDetails();
@@ -226,6 +230,16 @@ public class TravelPlannerFrame extends JFrame implements WeatherObserver {
         weatherProvider.attach(weatherPieChartPanel);
         weatherProvider.notifyObservers();
         weatherProvider.start();
+    }
+
+    private void toggleWeatherUpdates() {
+        if (weatherProvider.isRunning()) {
+            weatherProvider.stop();
+            weatherToggleButton.setText("Start");
+        } else {
+            weatherProvider.start();
+            weatherToggleButton.setText("Stop");
+        }
     }
 
     private void refreshCityLists() {
